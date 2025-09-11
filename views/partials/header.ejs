@@ -1,0 +1,19 @@
+<header>
+  <nav>
+    <div class="nav-left">
+      <a href="/">Home</a>
+      <a href="/favorites">Favorites</a>
+      <link rel="stylesheet" href="/styles.css">
+    </div>
+
+    <div class="nav-right">
+      <% if (session && session.userId) { %>
+        <span class="welcome-text">Welcome, <%= session.username %></span>
+        <a href="/logout" class="btn logout-btn">Logout</a>
+      <% } else { %>
+        <a href="/login" class="btn login-btn">Login</a>
+        <a href="/register" class="btn register-btn">Register</a>
+      <% } %>
+    </div>
+  </nav>
+</header>

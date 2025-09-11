@@ -1,0 +1,16 @@
+<li class="recipe-card">
+  <h3><%= recipe.title %></h3>
+  <img src="<%= recipe.image %>" alt="<%= recipe.title %>" width="150">
+
+  <div class="buttons">
+    <form action="/favorite/<%= recipe.id %>" method="POST" style="display:inline;">
+      <input type="hidden" name="title" value="<%= recipe.title %>">
+      <input type="hidden" name="image" value="<%= recipe.image %>">
+      <button type="submit">Save</button>
+    </form>
+
+    <a href="/recipe/<%= recipe.id %>">
+      <button type="button">View</button>
+    </a>
+  </div>
+</li>

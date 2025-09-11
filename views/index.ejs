@@ -1,0 +1,30 @@
+<%- include('partials/header') %>
+
+<main>
+  <!-- Welcome section -->
+  <h1 class="header">Welcome to Food Finder</h1>
+  <p class="welcome">Your go-to app for discovering delicious recipes!</p>
+
+  <!-- Search bar -->
+  <section class="search-section">
+    <form action="/search" method="POST" class="search-form">
+      <input type="text" name="query" placeholder="Enter an ingredient or dish name" required>
+      <button type="submit">Search</button>
+    </form>
+  </section>
+
+  <!-- Results section -->
+  <section class="results">
+    <% if (results && results.length > 0) { %>
+      <ul>
+        <% results.forEach(recipe => { %>
+          <%- include('partials/recipeCard.ejs', { recipe: recipe }) %>
+        <% }); %>
+      </ul>
+    <% } else { %>
+      <p>Explore.</p>
+    <% } %>
+  </section>
+</main>
+
+<%- include('partials/footer') %>

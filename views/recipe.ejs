@@ -1,0 +1,29 @@
+<%- include('partials/header') %>
+
+<main class="recipe-detail">
+  <h1><%= recipe.title %></h1>
+  <img src="<%= recipe.image %>" alt="<%= recipe.title %>" class="recipe-image">
+
+  <p><strong>Ready in:</strong> <%= recipe.readyInMinutes %> minutes</p>
+  <p><strong>Servings:</strong> <%= recipe.servings %></p>
+
+  <section class="ingredients">
+    <h2>Ingredients</h2>
+    <ul>
+      <% recipe.extendedIngredients.forEach(ing => { %>
+        <li><%= ing.amount %> <%= ing.unit %> <%= ing.name %></li>
+      <% }) %>
+    </ul>
+  </section>
+
+  <section class="instructions">
+    <h2>Instructions</h2>
+    <p><%= recipe.instructions || "No instructions available." %></p>
+  </section>
+
+  <a href="<%= recipe.sourceUrl %>" target="_blank">
+    <button>View Original Source</button>
+  </a>
+</main>
+
+<%- include('partials/footer') %>

@@ -1,0 +1,32 @@
+<%- include('partials/header') %>
+
+<main class="favorites-page">
+  <h1>Your Favorites</h1>
+
+  <% if (favorites.length > 0) { %>
+    <ul class="favorites-list">
+      <% favorites.forEach(fav => { %>
+        <li class="recipe-card">
+          <h3><%= fav.title %></h3>
+          <img src="<%= fav.image_url %>" alt="<%= fav.title %>" width="150">
+
+          <div class="buttons">
+            <!-- View Recipe -->
+            <a href="/recipe/<%= fav.recipe_id %>">
+              <button type="button">View</button>
+            </a>
+
+            <!-- Remove from Favorites -->
+            <form action="/favorites/remove/<%= fav.recipe_id %>" method="POST" style="display:inline;">
+              <button type="submit" class="remove-btn">Remove</button>
+            </form>
+          </div>
+        </li>
+      <% }) %>
+    </ul>
+  <% } else { %>
+    <p>You haven’t saved any recipes yet.</p>
+  <% } %>
+</main>
+
+<%- include('partials/footer') %>
