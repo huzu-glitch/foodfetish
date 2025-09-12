@@ -8,7 +8,7 @@ import bcrypt from 'bcrypt';
 dotenv.config();
 
 const app = express();
-const port = 3000;
+const port = process.env.PORT ||3000;
 const apiKey = process.env.API_KEY;
 
 app.use(session({
@@ -24,12 +24,10 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
 const db = new pg.Client({
-    user: process.env.DB_USER,
-    host: process.env.DB_HOST,
-    database: process.env.DB_NAME,
-    password: process.env.DB_PASSWORD,
-    port: process.env.DB_PORT
+  connectionString: process.env.DATABASE_URL,
+  ssl: { rejectUnauthorized: false }
 });
+
 db.connect(err => {
     if (err) {
         return console.error('Could not connect to the database', err);
