@@ -8,7 +8,7 @@ import bcrypt from 'bcrypt';
 dotenv.config();
 
 const app = express();
-const port = process.env.PORT ||3000;
+const port = process.env.PORT || 3000;
 const apiKey = process.env.API_KEY;
 
 app.use(session({
@@ -78,7 +78,7 @@ app.post("/login", async (req, res) => {
     const user = result.rows[0];
     const match = await bcrypt.compare(password, user.password_hash);
     if (match) {
-      req.session.userId = user.id;
+      req.session.userId = user.id; // Make sure user.id is stored
       req.session.username = user.username;
       res.redirect("/");
     } else {
@@ -89,6 +89,7 @@ app.post("/login", async (req, res) => {
     res.render("login.ejs", { message: "Something went wrong." });
   }
 });
+
 
 // logout route
 app.get("/logout", (req, res) => {
@@ -119,10 +120,12 @@ app.get("/recipe/:id", async (req, res) => {
 
 
 // removing favs
-app.post("/favorites/remove/:id", async (req, res) => {
+app.post("/favorites/remove/:id", isLoggedIn, async (req, res) => { // Added isLoggedIn middleware
   const { id } = req.params;
+  const userId = req.session.userId; // Get userId from session
   try {
-    await db.query("DELETE FROM favorites WHERE recipe_id = $1", [id]);
+    // Only delete the favorite for the current user
+    await db.query("DELETE FROM favorites WHERE recipe_id = $1 AND user_id = $2", [id, userId]);
 
     res.redirect("/favorites");
   } catch (err) {
@@ -146,25 +149,29 @@ app.post("/search", async (req, res) => {
 });
 
 // adding favs
-app.post("/favorite/:id", async (req, res) => {
+app.post("/favorite/:id", isLoggedIn, async (req, res) => { // Added isLoggedIn middleware
     const { id } = req.params;
     const { title, image } = req.body;
+    const userId = req.session.userId; // Get userId from session
+
     try {
-    await db.query(
-      "INSERT INTO recipes (recipe_id, title, image_url) VALUES ($1, $2, $3) ON CONFLICT (recipe_id) DO NOTHING",
-      [id, title, image]
-    );
+        // First, ensure the recipe exists in our recipes table
+        await db.query(
+            "INSERT INTO recipes (recipe_id, title, image_url) VALUES ($1, $2, $3) ON CONFLICT (recipe_id) DO UPDATE SET title = EXCLUDED.title, image_url = EXCLUDED.image_url",
+            [id, title, image]
+        );
 
-    await db.query(
-      "INSERT INTO favorites (recipe_id) VALUES ($1)",
-      [id]
-    );
+        // Then, add to favorites for the specific user
+        await db.query(
+            "INSERT INTO favorites (user_id, recipe_id) VALUES ($1, $2) ON CONFLICT (user_id, recipe_id) DO NOTHING",
+            [userId, id]
+        );
 
-    res.redirect("/favorites");
-  } catch (err) {
-    console.error(err);
-    res.redirect("/");
-  }
+        res.redirect("/favorites");
+    } catch (err) {
+        console.error("Error adding favorite:", err);
+        res.redirect("/"); // Or render an error message
+    }
 });
 
 // favorites page
@@ -178,12 +185,19 @@ function isLoggedIn(req, res, next) {
 }
 
 app.get("/favorites", isLoggedIn, async (req, res) => {
+    const userId = req.session.userId; // Get userId from session
     try {
-        const result = await db.query("SELECT * FROM recipes INNER JOIN favorites ON recipes.recipe_id = favorites.recipe_id");
+        const result = await db.query(
+            `SELECT r.recipe_id, r.title, r.image_url
+             FROM recipes r
+             INNER JOIN favorites f ON r.recipe_id = f.recipe_id
+             WHERE f.user_id = $1`, // Filter by user_id
+            [userId]
+        );
         const favorites = result.rows;
         res.render("favorites.ejs", { favorites: favorites });
     } catch (err) {
-        console.error(err);
+        console.error("Error fetching favorites:", err);
         res.redirect("/");
     }
 });
