@@ -155,13 +155,12 @@ app.post("/favorite/:id", isLoggedIn, async (req, res) => { // Added isLoggedIn 
     const userId = req.session.userId; // Get userId from session
 
     try {
-        // First, ensure the recipe exists in our recipes table
         await db.query(
             "INSERT INTO recipes (recipe_id, title, image_url) VALUES ($1, $2, $3) ON CONFLICT (recipe_id) DO UPDATE SET title = EXCLUDED.title, image_url = EXCLUDED.image_url",
             [id, title, image]
         );
 
-        // Then, add to favorites for the specific user
+        
         await db.query(
             "INSERT INTO favorites (user_id, recipe_id) VALUES ($1, $2) ON CONFLICT (user_id, recipe_id) DO NOTHING",
             [userId, id]
